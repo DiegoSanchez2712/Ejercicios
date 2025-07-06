@@ -89,107 +89,104 @@ preguntas = {
           "respuesta": "A"}],
 
     }
-nombre = input("¡BIENVENIDO A... QUIEN QUIERE SER MILLONARIO! \nIngrese su nombre: ")
+
+nombre = input("\n¡BIENVENIDO A... QUIEN QUIERE SER MILLONARIO!\nIngrese su nombre: ")
 opciones = ["A", "B", "C", "D"]
-comodines = [True,"1. Llamada a un amigo", True, "2. 50/50", True,"3. Cambiar de pregunta"]
+comodines = [True, "1. Llamada a un amigo", True, "2. 50/50", True, "3. Cambiar de pregunta"]
 salir = False
 total = 0
 
-for i,j in preguntas.items():
+for num_pregunta, conjunto in preguntas.items():
+    opciones_mitad = []
+
     def llamada():
-        if comodines[0] == True:
-            print(f"hm... yo creo que es la {elegida["opciones"][random.randint(0,3)]}")
+        if comodines[0]:
+            print(f"hmm... yo creo que es la {random.choice(elegida['opciones'])}")
             comodines[0] = False
-        else: 
-            print("Opcion ya utilizada")
+        else:
+            print("\n[!] Opcion ya utilizada")
 
     def mitad_opciones():
-        if comodines[2] == True:
-            for i in range(len(elegida["opciones"])):
-                if elegida["respuesta"] == opciones[i]:
-                    print(elegida["pregunta"])
-                    print(elegida["opciones"].pop(i))
-                    print(elegida["opciones"][random.randint(0,2)])
-                    comodines[2] = False
-        else:   
-            print("Opcion ya utilizada")
+        if comodines[2]:
+            print("\n[50/50 activado]")
+            opcion_correcta = next(op for op in elegida["opciones"] if op.startswith(elegida["respuesta"] + "."))
+            incorrectas = [op for op in elegida["opciones"] if not op.startswith(elegida["respuesta"] + ".")]
+            opcion_incorrecta = random.choice(incorrectas)
+            elegida["opciones"] = [opcion_correcta, opcion_incorrecta]
+            random.shuffle(elegida["opciones"])
+            for op in elegida["opciones"]:
+                print(op)
+            comodines[2] = False
+        else:
+            print("\n[!] Opcion ya utilizada")
+
     def cambio():
-        if comodines[4] == True:
-            elegida =  preguntaElegida[0] 
-            print(f"La nueva pregunta numero {i} es : \n{elegida["pregunta"]}")
-            for k in elegida["opciones"]:
-                print(k)
+        if comodines[4]:
+            nueva = preguntaElegida[0]
             comodines[4] = False
+            return nueva
         else:
-            print("Opcion ya utilizada")
-            
-    preguntaElegida = [j[0], j[1]]
-    aleatoridad = random.randint(0,1)
-    elegida = preguntaElegida[aleatoridad]
-    preguntaElegida.pop(aleatoridad)   
-    print(f"{nombre}, La pregunta numero {i} es : \n{elegida["pregunta"]}")
+            print("\n[!] Opcion ya utilizada")
+            return None
 
-    for k in elegida["opciones"]:
-        print(k)
-    while True:   
-        comodin =  int(input("---------------------------- \n1. si \n2. no \nDesea utilizar comodin?: "))
-    
-        if comodin == 1:
-            for i in range(len(comodines)):
-                if i % 2 == 0:
-                    if comodines[i] == True:
-                        print(comodines[i+1])
-                    else:
-                        print(f"{i+1}. Opcion utilizada")
-                else: 
-                    continue
-            comodin_eleccion =  int(input("Elija el comodin: "))
-            if comodin_eleccion == 1:
-               llamada()
-            elif comodin_eleccion == 2:
-                mitad_opciones()
-            elif comodin_eleccion == 3:
-                cambio()
-        elif comodin == 2:
-            break
-        else:
-            print("Digite una opcion correcta")    
-    
+    preguntaElegida = conjunto.copy()
+    aleatoriedad = random.randint(0, 1)
+    elegida = preguntaElegida.pop(aleatoriedad)
+
+    print(f"\n{nombre}, Pregunta {num_pregunta}:\n{elegida['pregunta']}")
+    for op in elegida["opciones"]:
+        print(op)
+
     while True:
-        user_eleccion = input("Digite la opcion indicada: ")
-        for i in range(len(opciones)):
-            if user_eleccion.upper() in opciones:   
-                if user_eleccion.upper() == elegida["respuesta"]:
-                    total += 100000
-                    print("haz acertado")
-                    break
-                else:
-                    print("perdio")
-                    salir = True
-                    break
-                    
-            else:
-                print("Digite una opcion correcta")
-
-        if salir == True:
+        comodin = input("\n------------------------------------\n¿Desea utilizar un comodín?:\n1. Si\n2. No\nRespuesta")
+        if comodin == "1":
+            for i in range(0, len(comodines), 2):
+                estado = "[DISPONIBLE]" if comodines[i] else "[USADO]"
+                print(f"{comodines[i+1]} {estado}")
+            eleccion = input("Elija el número del comodín (1-3): ")
+            if eleccion == "1": llamada()
+            elif eleccion == "2": mitad_opciones()
+            elif eleccion == "3":
+                nueva_pregunta = cambio()
+                if nueva_pregunta:
+                    elegida = nueva_pregunta
+                    print(f"\nNueva pregunta {num_pregunta}:\n{elegida['pregunta']}")
+                    for op in elegida['opciones']:
+                        print(op)
+        elif comodin == "2":
             break
-        while True:
-            asegurar = int(input(f"\n1. si \n2. no \nDesea llevarse solo {total}?:  "))
-            if asegurar == 1:
-                print(f"El usuario se ha plantado con {total}")
-                salir = True
-                break   
-            elif asegurar == 2:
-                print(f"El usuario no se desea plantar. su dinero acumulado actualmente es {total}")
-                break
+        else:
+            print("[!] Opcion invalida")
+
+    while True:
+        user_input = input("\nDigite la opción (A, B, C, D): ").upper()
+        opciones_validas = [op[0] for op in elegida["opciones"]]
+
+        if user_input in opciones_validas:
+            if user_input == elegida["respuesta"]:
+                print("\nCorrecto!")
+                total += 100000
             else:
-                print("¡Digite una opcion valida!")
+                print("\nIncorrecto. Fin del juego.")
+                salir = True
+            break
+        else:
+            print("[!] Opcion no disponible. Intenta otra.")
+
+    if salir:
         break
 
-    if salir == True:
-            break  
-    
-else:
-    print(f"haz ganado las 10 preguntas, con un total neto de {total}")
-    
+    while True:
+        asegurar = input(f"\n¿Desea retirarse con ${total}?\n1. Sí\n2. No\nOpcion: ")
+        if asegurar == "1":
+            print(f"\n{nombre} se ha retirado con ${total}.")
+            salir = True
+            break
+        elif asegurar == "2":
+            print(f"\n{nombre} decide continuar. Total acumulado: ${total}.")
+            break
+        else:
+            print("[!] Ingrese una opción válida")
+
+print(f"\nJuego terminado. Total ganado: ${total}") 
 
